@@ -13,9 +13,17 @@ var PhotoUploadComponent = React.createClass({
             imageVisible: {display: 'none'},
             progressBarActive: true,
             progressBarPercent: 0,
+            progressBarStyle: null,
             progressBarText: ""
             
             };
+    },
+
+    getProgressBarState: function(active, percent, style, text) {
+    	return {progressBarActive: active, 
+    			progressBarPercent: percent,
+    			progressBarStyle: style,
+    			progressBarText: text};
     },
 
     uploadProgress: function(e) {
@@ -23,40 +31,35 @@ var PhotoUploadComponent = React.createClass({
     	var percentDone = Math.round(Math.floor(done/total*1000)/10);
 		
 		if (percentDone < 100) {
-			this.setState({progressBarPercent: percentDone, progressBarText: "Uploading..."});
+			this.setState(this.getProgressBarState(true, percentDone, null, "Uploading image..."));
 		} else {
-			this.setState({progressBarPercent: 100, progressBarText: "Analyzing..."});
+			this.setState(this.getProgressBarState(true, 100, "info", "Analyzing image..."));
 		}
 		
-    	//console.log('xhr.upload progress: ' + done + ' / ' + total + ' = ' + percentDone + '%');
     },
 
     receivedResponse: function(e) {
-    	this.setState({progressBarText: "Complete: " + e.target.response, progressBarActive: false});
-    	console.log('response received: ' + e.target.response);
+    	this.setState(this.getProgressBarState(false, 100, "success", "Complete" + e.target.response));
     },
 
-    onReadyStateChange: function(e) {
-    	//console.log('onReadyStateChange: ' + e.target.readyState);
-    	//console.log(e);
+    onUploadError: function(e) {
+    	this.setState(this.getProgressBarState(false, 100, "danger", "Error!"));
     },
 
     performUpload: function(file) {
-    	
     	var xhr = new XMLHttpRequest();
     	// must use xhr.upload.onprogress instead of xhr.onprogress to track file upload!
     	xhr.upload.onprogress = this.uploadProgress;
         xhr.onreadystatechange = this.onReadyStateChange;
         xhr.onload = this.receivedResponse;
+        xhr.onerror = this.onUploadError;
 
         xhr.open('POST', "http://192.168.1.220:10111/upload", true);
-        xhr.setRequestHeader("Content-Type", "multipart/form-data");
-        
-        //xhr.setRequestHeader("X-File-Name", file.name);
-        //xhr.setRequestHeader("X-File-Type", file.type);
+        // Adding the following header breaks upload.  Possibly redundant from the form html??
+        //xhr.setRequestHeader("Content-Type", "multipart/form-data");
 
         var formData = new FormData();
-        formData.append("thefile", file);
+        formData.append("imageFile", file);
         xhr.send(formData);
     },
 
@@ -95,7 +98,7 @@ var PhotoUploadComponent = React.createClass({
 				<Modal show={this.state.showImagePreview}>
 					<Modal.Body>
 						<ProgressBar label={this.state.progressBarText} now={this.state.progressBarPercent} 
-							active={this.state.progressBarActive} />
+							active={this.state.progressBarActive} bsStyle={this.state.progressBarStyle} />
 						<img id="upload_image" src={this.state.imagePreview} alt="image" style={{width: '50%'}}/>
 					</Modal.Body>
 				</Modal>
