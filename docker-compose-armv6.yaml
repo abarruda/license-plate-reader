@@ -4,7 +4,9 @@ services:
 
   streamer:
     container_name: lp-detection-streamer
-    build: ./streamer
+    build:
+      context: streamer
+      dockerfile: Dockerfile-armv6
     devices:
       - "/dev/vchiq"
     ports:
@@ -14,7 +16,9 @@ services:
   openalpr:
     container_name: lp-detection-openalpr
     #image: abarruda/openalpr:stretch
-    build: ./openalpr
+    build:
+      context: openalpr
+      dockerfile: Dockerfile-armv6
     volumes:
       - ./openalpr/data:/data
     depends_on:
