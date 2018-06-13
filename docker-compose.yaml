@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+
+  streamer:
+    container_name: lp-detection-streamer
+    build: ./streamer
+    devices:
+      - "/dev/vchiq"
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+  openalpr:
+    container_name: lp-detection-openalpr
+    #image: abarruda/openalpr:stretch
+    build: ./openalpr
+    volumes:
+      - ./openalpr/data:/data
+    depends_on:
+      - streamer
+      - control
+    restart: unless-stopped
+
+  control:
+    container_name: lp-detection-control
+    build: ./control
+    ports:
+      - "80"
