@@ -1,5 +1,4 @@
-FROM resin/rpi-raspbian
-#FROM arm32v6/alpine
+FROM resin/rpi-raspbian:stretch
 
 ###############
 # opencv ######

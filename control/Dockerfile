@@ -1,4 +1,4 @@
-FROM resin/rpi-raspbian
+FROM ubuntu
 
 RUN apt-get update && apt-get upgrade --assume-yes
 
