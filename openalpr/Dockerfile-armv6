@@ -78,21 +78,28 @@ RUN make install
 # openALPR ###
 ###############
 RUN apt-get update && apt-get install --assume-yes \
-  libpng12-dev \
-  libtiff5-dev \
-  zlib1g-dev \
-  libcurl4-openssl-dev \
-  build-essential \
-  autoconf \
-  automake \
-  libtool \
-  git-core \
-  cmake \
-  openjdk-8-jdk \
-  vim
+  beanstalkd \
+  libcurl4-openssl-dev
+#  libpng12-dev \
+#  libtiff5-dev \
+#  zlib1g-dev \
+#  libcurl4-openssl-dev \
+#  build-essential \
+#  autoconf \
+#  automake \
+#  libtool \
+#  git-core \
+#  cmake \
+#  openjdk-8-jdk \
+#  vim
+
+# Necessary for java bindings:
+# #RUN apt-get update && apt-get install --assume-yes \
+# #  openjdk-8-jdk
+# #ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-armhf
+
 
 WORKDIR /
-#RUN git clone https://github.com/openalpr/openalpr.git
 RUN wget -q https://github.com/openalpr/openalpr/archive/v2.3.0.tar.gz
 RUN tar -xf v2.3.0.tar.gz
 WORKDIR openalpr-2.3.0
@@ -102,7 +109,6 @@ RUN echo "set(CMAKE_CXX_STANDARD 11)" | cat - src/CMakeLists.txt > CMakeLists.tx
 RUN echo "set(CMAKE_CXX_STANDARD_REQUIRED ON)" | cat - src/CMakeLists.txt > CMakeLists.txt.tmp && mv CMakeLists.txt.tmp src/CMakeLists.txt
 RUN echo "set(CMAKE_CXX_EXTENSIONS OFF)" | cat - src/CMakeLists.txt > CMakeLists.txt.tmp && mv CMakeLists.txt.tmp src/CMakeLists.txt
 
-ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-armhf
 
 WORKDIR /openalpr-2.3.0/src
 RUN cmake ./
@@ -110,8 +116,6 @@ RUN make
 RUN make install
 
 COPY alprd.conf /etc/openalpr/alprd.conf
-
-RUN apt-get install -y beanstalkd
 
 WORKDIR /
 COPY entrypoint.sh /entrypoint.sh
