@@ -1,4 +1,8 @@
-FROM ubuntu
+#FROM ubuntu
+#FROM balenalib/generic-armv7ahf-ubuntu:xenial
+FROM balenalib/generic-armv7ahf-debian:stretch AS builder
+
+ARG compileCores=1
 
 ###############
 # opencv ######
@@ -18,8 +22,9 @@ RUN tar -xf 3.4.1.tar.gz
 WORKDIR opencv-3.4.1
 RUN mkdir release
 WORKDIR release
+RUN echo "*** # cores used for build: $compileCores ***"
 RUN cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local ..
-RUN make -j "$(nproc)" VERBOSE=1
+RUN make -j $compileCores VERBOSE=1
 RUN make install
 RUN rm -r /opencv-3.4.1
 
@@ -32,7 +37,7 @@ RUN wget -q http://www.leptonica.org/source/leptonica-1.76.0.tar.gz
 RUN tar -xf leptonica-1.76.0.tar.gz
 WORKDIR leptonica-1.76.0
 RUN ./configure --prefix=/usr/local
-RUN make -j "$(nproc)" && make install
+RUN make -j $compileCores && make install
 
 ###############
 # tesseract ###
@@ -54,15 +59,30 @@ ENV LD_LIBRARY_PATH=/usr/local/lib
 
 RUN ./autogen.sh
 RUN ./configure
-RUN make -j "$(nproc)" && make install
+RUN make -j $compileCores && make install
 RUN ldconfig
+
+###############
+# log4cplus ###
+###############
+
+WORKDIR /
+RUN wget -q https://github.com/log4cplus/log4cplus/releases/download/REL_2_0_0/log4cplus-2.0.0.tar.gz
+RUN tar -xf log4cplus-2.0.0.tar.gz
+WORKDIR log4cplus-2.0.0
+RUN echo "set(CMAKE_CXX_STANDARD 11)" | cat - CMakeLists.txt > CMakeLists.txt.tmp && mv CMakeLists.txt.tmp CMakeLists.txt
+RUN echo "set(CMAKE_CXX_STANDARD_REQUIRED ON)" | cat - CMakeLists.txt > CMakeLists.txt.tmp && mv CMakeLists.txt.tmp CMakeLists.txt
+RUN echo "set(CMAKE_CXX_EXTENSIONS OFF)" | cat - CMakeLists.txt > CMakeLists.txt.tmp && mv CMakeLists.txt.tmp CMakeLists.txt
+RUN cmake ./
+RUN make 
+RUN make install
 
 ###############
 # openALPR ###
 ###############
 
 RUN apt-get update && apt-get install --assume-yes \
-  liblog4cplus-dev \
+#  liblog4cplus-dev \
   beanstalkd \
   libcurl4-openssl-dev
 
@@ -83,12 +103,30 @@ RUN echo "set(CMAKE_CXX_EXTENSIONS OFF)" | cat - src/CMakeLists.txt > CMakeLists
 
 WORKDIR /openalpr-2.3.0/src
 RUN cmake ./
-RUN make -j "$(nproc)"
+RUN echo "compileCores: $compileCores"
+RUN make -j $compileCores
 RUN make install
+
+FROM balenalib/generic-armv7ahf-debian:stretch AS alpr
+COPY --from=builder /usr/local /usr/local
+COPY --from=builder /usr/bin/beanstalkd /usr/bin/beanstalkd
+
+RUN apt-get update && apt-get install --assume-yes \
+  libpng16-16 \
+  libjpeg62-turbo \
+  libtiff5 \
+  libgtk2.0-0 \
+  libdc1394-22 \
+  libavcodec57 \
+  libavformat57 \
+  libswscale4
 
 COPY alprd.conf /etc/openalpr/alprd.conf
 
 WORKDIR /
 COPY entrypoint.sh /entrypoint.sh
+ENV LD_LIBRARY_PATH=/usr/local/lib
+
+COPY --from=builder /etc/openalpr/openalpr.conf /etc/openalpr/openalpr.conf
 
 CMD sh entrypoint.sh
