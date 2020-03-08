@@ -5,6 +5,7 @@ services:
   streamer:
     container_name: lp-detection-streamer
     build: ./streamer
+    image: abarruda/license-plate-reader_streamer
     devices:
       - "/dev/vchiq"
     ports:
@@ -14,6 +15,7 @@ services:
   openalpr:
     container_name: lp-detection-openalpr
     build: ./openalpr
+    image: abarruda/license-plate-reader_openalpr
     volumes:
       - ./openalpr/data:/data
     depends_on:
@@ -24,5 +26,6 @@ services:
   control:
     container_name: lp-detection-control
     build: ./control
+    image: abarruda/license-plate-reader_control
     ports:
       - "80"

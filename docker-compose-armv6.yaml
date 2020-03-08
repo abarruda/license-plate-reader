@@ -7,6 +7,7 @@ services:
     build:
       context: streamer
       dockerfile: Dockerfile
+    image: abarruda/license-plate-reader_streamer
     devices:
       - "/dev/vchiq"
     ports:
@@ -18,6 +19,7 @@ services:
     build:
       context: openalpr
       dockerfile: Dockerfile-armv6
+    image: abarruda/license-plate-reader_openalpr
     volumes:
       - ./openalpr/data:/data
     depends_on:
@@ -30,5 +32,6 @@ services:
     build:
       context: control
       dockerfile: Dockerfile-armv6
+    image: abarruda/license-plate-reader_control
     ports:
       - "80"
