@@ -87,9 +87,9 @@ RUN apt-get update && apt-get install --assume-yes \
   libcurl4-openssl-dev
 
 # Necessary for java bindings:
-#RUN apt-get update && apt-get install --assume-yes \
-#  openjdk-8-jdk
-#ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-armhf
+RUN apt-get update && apt-get install --assume-yes \
+  openjdk-8-jdk
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-armhf
 
 WORKDIR /
 RUN wget -q https://github.com/openalpr/openalpr/archive/v2.3.0.tar.gz
