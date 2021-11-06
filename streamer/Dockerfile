@@ -1,24 +1,20 @@
 FROM resin/rpi-raspbian:stretch
 
-# consider moving to https://github.com/datarhei/restreamer
-
-RUN apt-get update && apt-get upgrade --assume-yes
-RUN apt-get install -y cmake libjpeg8-dev git
-RUN apt-get install -y build-essential
-RUN apt-get install -y libraspberrypi-bin 
-
-#RUN usermod -a -G video root
+# --allow-unauthenticated needed below for non RPI builds/testing
+RUN apt-get update && apt-get install -y cmake libjpeg62-turbo-dev git build-essential libraspberrypi-bin
 
 WORKDIR /
 COPY opt_vc_include.tar.gz /
 RUN tar -xzvf opt_vc_include.tar.gz
 
-RUN git clone https://github.com/jacksonliam/mjpg-streamer
-WORKDIR /mjpg-streamer/mjpg-streamer-experimental
+RUN curl -o mjpeg-streamer-v1.0.0.tar.gz https://codeload.github.com/jacksonliam/mjpg-streamer/tar.gz/refs/tags/v1.0.0
+RUN tar -zxvf mjpeg-streamer-v1.0.0.tar.gz
 
+WORKDIR /mjpg-streamer-1.0.0/mjpg-streamer-experimental
 RUN make -j "$(nproc)"
 RUN make install
 
 EXPOSE 80
 
-CMD ./mjpg_streamer -o "output_http.so -w ./www -p 80" -i "input_raspicam.so"
+COPY entrypoint.sh /mjpg-streamer-1.0.0/mjpg-streamer-experimental/entrypoint.sh
+CMD /mjpg-streamer-1.0.0/mjpg-streamer-experimental/entrypoint.sh
