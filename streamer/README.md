@@ -5,6 +5,8 @@ The streamer is used to provide imagery to the license plate detection component
 ## Building
 This streamer build specifically uses the Raspberry Pi Raspicam input plugin.  A Raspberry Pi is required to build this image, as it requires Raspicam libraries to build the mjpeg-streamer binaries.  The `docker-build-run.sh` will bundle the required libraries and pass them to the docker image build.
 
+Tested/built using Raspberry Pi B, ARMv6.
+
 ## Configuration
 Some parameters provided to the raspicam input plugin can be configured via environment variables:
 
