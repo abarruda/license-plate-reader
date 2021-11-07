@@ -17,9 +17,10 @@ services:
     container_name: lp-detection-openalpr
     build:
       context: openalpr
-      dockerfile: Dockerfile-armv6
+      dockerfile: Dockerfiles/Dockerfile-armv6
     volumes:
       - ./openalpr/data:/data
+      - ./openalpr/alprd.conf:/etc/openalpr/alprd.conf
     depends_on:
       - streamer
       - control
