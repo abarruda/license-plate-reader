@@ -8,6 +8,16 @@
 [Compilation instructions](https://github.com/openalpr/openalpr/wiki/Compilation-instructions-(Ubuntu-Linux))
 
 ### Notes & Brainstorming
+- MJPEG Streamer
+	- On Raspberry Pi B, [disable](https://forums.raspberrypi.com/viewtopic.php?t=61665) power management for Edimax Wifi adapter 
+	- Performant camera configurations:
+	```conf
+  STREAMER_FPS=3
+  STREAMER_QUALITY=10
+  STREAMER_WIDTH=1296
+  STREAMER_HEIGHT=972
+	```
+	- [More details](https://picamera.readthedocs.io/en/release-1.3/fov.html#camera-modes) on camera modes
 - Wyze Cam RTSP supported as stream in `alprd.conf`:
     ```conf
 	stream = rtsp://{user}:${password}@{ip}/live
