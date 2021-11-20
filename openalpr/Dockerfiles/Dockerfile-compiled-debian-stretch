@@ -11,6 +11,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
 
 RUN apt-get install --assume-yes apt-utils wget build-essential cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev curl
+# TODO: investigate gstreamer: https://groups.google.com/g/openalpr/c/BWjjVMRh_rI/m/SYmgBMEgBwAJ
 
 RUN curl -o 3.4.1.tar.gz https://codeload.github.com/opencv/opencv/tar.gz/3.4.1
 RUN tar -xf 3.4.1.tar.gz
@@ -96,9 +97,12 @@ COPY --from=builder /usr/local /usr/local
 COPY --from=builder /usr/include /usr/include
 COPY --from=builder /usr/bin/beanstalkd /usr/bin/beanstalkd
 COPY --from=builder /etc/openalpr /etc/openalpr
+
+# https://stackoverflow.com/questions/56793592/is-this-a-good-approach-for-developing-a-multi-layered-c-c-application-using-d
 RUN ldconfig -v
 
 RUN apt-get update && apt-get install -y \
+procps \
 curl \
 liblog4cplus-dev \
 libpng-dev \
